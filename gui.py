@@ -249,7 +249,6 @@ class Tab2:
         modn1 = interpolate(self.config[self.current_image_index]["answer1"])(mod1)
         modn2 = interpolate(self.config[self.current_image_index]["answer2"])(mod2)
 
-        print(modn1, modn2)
         if modn1 < 0:
             noisen1 = noise1**(abs(modn1) / 2)
         else:
@@ -370,7 +369,6 @@ class Tab3:
         modn1 = interpolate(self.config[self.current_image_index]["answer1"])(mod1)
         modn2 = interpolate(self.config[self.current_image_index]["answer2"])(mod2)
 
-        print(modn1, modn2)
         if modn1 < 0:
             noisen1 = noise1**(abs(modn1) / 2)
         else:
