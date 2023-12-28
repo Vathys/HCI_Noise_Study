@@ -1,5 +1,6 @@
 import random
 import json
+import copy
 
 import numpy as np
 
@@ -10,7 +11,7 @@ from PIL import Image, ImageTk
 from skimage.draw import ellipse
 from skimage.filters import gaussian
 from skimage.util import random_noise
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import PchipInterpolator
 
 def gen_image(img_size, num_obj, seed):
     random.seed(seed)
@@ -43,18 +44,18 @@ def gen_image(img_size, num_obj, seed):
     return img[5:-5, 5:-5]
 
 
-def interpolate(start, answer, end):
-    x = [-1, 0, 1]
-    y = [start, answer, end]
-    cs = CubicSpline(x, y)
+def interpolate(answer):
+    x = [-1, answer, 1]
+    y = [-1, 0, 1]
+    cs = PchipInterpolator(x, y)
 
     return cs.__call__
 
 
-def gen_answer(thres = 0.1):
+def gen_answer(lthres = 0.1, uthres = 0.8):
     ans = random.random() * 2 - 1
 
-    while abs(ans) < thres:
+    while abs(ans) < lthres and abs(ans) > uthres:
         ans = random.random() * 2 - 1
     
     return ans
@@ -97,7 +98,7 @@ class Tab1:
         self.slider_label.pack()
         self.slider = ttk.Scale(
             self.tab,
-            from_ = -1,
+            from_ = -1.0,
             to = 1.0,
             orient = 'horizontal',
             command = lambda value: self.update_image_function(value),
@@ -108,7 +109,7 @@ class Tab1:
         self.tab.pack()
 
     def return_config(self):
-        conf = self.config
+        conf = copy.deepcopy(self.config)
         
         for entry in conf:
             del entry["image"]
@@ -133,19 +134,18 @@ class Tab1:
         noise = self.config[self.current_image_index]["noise"]
         mod = self.config[self.current_image_index]["mod"]
 
-        modn = interpolate(-1, self.config[self.current_image_index]["answer"], 1)(mod)
+        modn = interpolate(self.config[self.current_image_index]["answer"])(mod)
         if modn < 0:
             noisen = noise**(abs(modn) / 2)
         else:
-            noisen = noise**(1 - abs(modn) / 2)
+            noisen = noise**(1 - (abs(modn) / 2))
 
         dilute_img = image + abs(modn) * noisen * (1 - image)
         dilute_img = np.clip(dilute_img, 0, 1)
         
         return dilute_img
 
-    def update_image_function(self, 
-                     value):
+    def update_image_function(self, value):
         self.config[self.current_image_index]["mod"] = float(value)
         processed_image = self.modulate_noise()
         self.config[self.current_image_index]["history"].append(self.config[self.current_image_index]["mod"])
@@ -217,7 +217,7 @@ class Tab2:
         self.tab.pack()
 
     def return_config(self):
-        conf = self.config
+        conf = copy.deepcopy(self.config)
         
         for entry in conf:
             del entry["image"]
@@ -246,17 +246,18 @@ class Tab2:
         noise2 = self.config[self.current_image_index]["noise2"]
         mod2 = self.config[self.current_image_index]["mod2"]
 
-        modn1 = interpolate(-1, self.config[self.current_image_index]["answer1"], 1)(mod1)
-        modn2 = interpolate(-1, self.config[self.current_image_index]["answer2"], 1)(mod2)
+        modn1 = interpolate(self.config[self.current_image_index]["answer1"])(mod1)
+        modn2 = interpolate(self.config[self.current_image_index]["answer2"])(mod2)
 
+        print(modn1, modn2)
         if modn1 < 0:
             noisen1 = noise1**(abs(modn1) / 2)
         else:
-            noisen1 = noise1**(1 - abs(modn1) / 2)
+            noisen1 = noise1**(1 - (abs(modn1) / 2))
         if modn2 < 0:
             noisen2 = noise2**(abs(modn2) / 2)
         else:
-            noisen2 = noise2**(1 - abs(modn2) / 2)
+            noisen2 = noise2**(1 - (abs(modn2) / 2))
 
         dilute_img = image + (abs(modn1) * noisen1 + abs(modn2) * noisen2) * (1 - image)
         dilute_img = np.clip(dilute_img, 0, 1)
@@ -337,7 +338,7 @@ class Tab3:
         self.tab.pack()
 
     def return_config(self):
-        conf = self.config
+        conf = copy.deepcopy(self.config)
         
         for entry in conf:
             del entry["image"]
@@ -366,17 +367,18 @@ class Tab3:
         noise2 = self.config[self.current_image_index]["noise2"]
         mod2 = self.config[self.current_image_index]["mod2"]
 
-        modn1 = interpolate(-1, self.config[self.current_image_index]["answer1"], 1)(mod1)
-        modn2 = interpolate(-1, self.config[self.current_image_index]["answer2"], 1)(mod2)
+        modn1 = interpolate(self.config[self.current_image_index]["answer1"])(mod1)
+        modn2 = interpolate(self.config[self.current_image_index]["answer2"])(mod2)
 
+        print(modn1, modn2)
         if modn1 < 0:
             noisen1 = noise1**(abs(modn1) / 2)
         else:
-            noisen1 = noise1**(1 - abs(modn1) / 2)
+            noisen1 = noise1**(1 - (abs(modn1) / 2))
         if modn2 < 0:
             noisen2 = noise2**(abs(modn2) / 2)
         else:
-            noisen2 = noise2**(1 - abs(modn2) / 2)
+            noisen2 = noise2**(1 - (abs(modn2) / 2))
 
         dilute_img = image + (abs(modn1) * noisen1 + abs(modn2) * noisen2) * (1 - image)
         dilute_img = np.clip(dilute_img, 0, 1)
