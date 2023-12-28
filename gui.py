@@ -416,8 +416,10 @@ class SaveTab:
             "seeds": self.seeds.tolist()
         }
 
-        for i in range(len(self.tabs)):
-            save_dict[f"task_{i + 1}"] = self.tabs[i].return_config()
+        # change order based on experiment
+        save_dict["single_slider"] = self.tabs[0].return_config()
+        save_dict["double_slider"] = self.tabs[1].return_config()
+        save_dict["double_slider+noise"] = self.tabs[2].return_config()
 
         with open("save.json", "w") as f:
             json.dump(save_dict, f)
