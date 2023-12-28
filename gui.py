@@ -1,6 +1,7 @@
 import random
 import json
 import copy
+from pathlib import Path
 
 import numpy as np
 
@@ -421,7 +422,9 @@ class SaveTab:
         save_dict["double_slider"] = self.tabs[1].return_config()
         save_dict["double_slider+noise"] = self.tabs[2].return_config()
 
-        with open("save.json", "w") as f:
+        cwd = Path.cwd().absolute()
+
+        with open(cwd / "save.json", "w") as f:
             json.dump(save_dict, f)
 
 class TabbedImageSliderApp:
