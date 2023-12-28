@@ -1,5 +1,6 @@
 build/*
-dist/*
 .venv/*
 *.spec
 *.json
+
+.DS_Store
